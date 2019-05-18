@@ -11,3 +11,6 @@ subscribe to see the data the program sends:  mosquitto_sub -p [your port] -t [y
 compile with: gcc *.c -o main -pthread
 run with ./main [your topic path] [port of mosquitto], so for example ./main text 1883
 
+
+libs and example code came from this repo: https://github.com/LiamBindle/MQTT-C
+
