@@ -18,8 +18,8 @@ WiFiClient client;
 
 Adafruit_MQTT_Client mqtt(&client, AIO, AIO_PORT, AIO_USERNAME, AIO_KEY);
 
-Adafruit_MQTT_Publish LED2 = Adafruit_MQTT_Publish(&mqtt, AIO_LED2);
-Adafruit_MQTT_Subscribe LED1 = Adafruit_MQTT_Subscribe(&mqtt, AIO_LED1);
+Adafruit_MQTT_Publish LED1 = Adafruit_MQTT_Publish(&mqtt, AIO_LED1);
+Adafruit_MQTT_Subscribe LED2 = Adafruit_MQTT_Subscribe(&mqtt, AIO_LED2);
 
 void MQTT_connect();
 
@@ -35,7 +35,7 @@ void setup() {
   Serial.print(WiFi.localIP());
   Serial.println();
 
-  mqtt.subscribe(&LED1);
+  mqtt.subscribe(&LED2);
 }
 
 void loop() {
@@ -44,14 +44,14 @@ void loop() {
   // TODO: TURN LED ON ACCORDINGLY
   Adafruit_MQTT_Subscribe *subscription;
   while ((subscription = mqtt.readSubscription(5000))) {
-    if (subscription == &LED1) {
+    if (subscription == &LED2) {
       Serial.print(F("Got: "));
-      Serial.println((char *)LED1.lastread);
+      Serial.println((char *)LED2.lastread);
     }
   }
 
   // TODO: SEND ON BUTTON PUSH
-  if (!LED2.publish("hi")) {
+  if (!LED1.publish("hi")) {
     Serial.println(F("Failed"));
   } else {
     Serial.println(F("OK!"));
