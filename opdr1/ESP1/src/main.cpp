@@ -3,8 +3,8 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 
-#define BUTTON 16
-#define LED 5
+#define BUTTON D2
+#define LED D3
 
 #define SSID "VRV95175E46E1"
 #define PASS "9aYuHkwkGxuw"
@@ -54,7 +54,7 @@ void loop() {
   while ((subscription = mqtt.readSubscription(5000))) {
     if (subscription == &LED1) {
       Serial.print("\nReceived: "); Serial.print((char*)LED1.lastread);
-      if(strcmp((char*)LED1.lastread, "ON")){        
+      if(strcmp((char*)LED1.lastread, "ON")){     
         digitalWrite(LED, HIGH);
       } else {
         digitalWrite(LED, LOW);
@@ -62,14 +62,12 @@ void loop() {
     }
   }
 
+  if(!digitalRead(BUTTON)){
+    LED2_state = !LED2_state;
+    !LED2.publish(LED2_state ? "ON" : "OFF");
+  }
 
-  // if (!LED2.publish("ON")) {
-  //   Serial.println(F("Failed"));
-  // } else {
-  //   Serial.println(F("OK!"));
-  // }
-
-  if(! mqtt.ping()) {
+  if(!mqtt.ping()) {
     mqtt.disconnect();
   }
 }
@@ -86,15 +84,15 @@ void MQTT_connect(){
 
   uint8_t retries = 3;
   while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-       Serial.println(mqtt.connectErrorString(ret));
-       Serial.println("Retrying MQTT connection in 5 seconds...");
-       mqtt.disconnect();
-       delay(5000);  // wait 5 seconds
-       retries--;
-       if (retries == 0) {
-         // basically die and wait for WDT to reset me
-         while (1);
-       }
+    Serial.println(mqtt.connectErrorString(ret));
+    Serial.println("Retrying MQTT connection in 5 seconds...");
+    mqtt.disconnect();
+    delay(5000);  // wait 5 seconds
+    retries--;
+    if (retries == 0) {
+      // basically die and wait for WDT to reset me
+      while (1);
+    }
   }
   Serial.println("MQTT Connected!");
 }

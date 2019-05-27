@@ -51,7 +51,7 @@ void loop() {
   }
 
   // TODO: SEND ON BUTTON PUSH
-  if (!LED1.publish("hi")) {
+  if (!LED.publish("hi")) {
     Serial.println(F("Failed"));
   } else {
     Serial.println(F("OK!"));
