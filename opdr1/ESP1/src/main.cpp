@@ -51,10 +51,10 @@ void loop() {
   MQTT_connect();
 
   Adafruit_MQTT_Subscribe *subscription;
-  while ((subscription = mqtt.readSubscription(5000))) {
+  while ((subscription = mqtt.readSubscription(10))) {
     if (subscription == &LED1) {
       Serial.print("\nReceived: "); Serial.print((char*)LED1.lastread);
-      if(strcmp((char*)LED1.lastread, "ON")){     
+      if(strcmp((char*)LED1.lastread, "ON") == 0){     
         digitalWrite(LED, HIGH);
       } else {
         digitalWrite(LED, LOW);
@@ -63,6 +63,7 @@ void loop() {
   }
 
   if(!digitalRead(BUTTON)){
+    Serial.println("Button pressed");
     LED2_state = !LED2_state;
     !LED2.publish(LED2_state ? "ON" : "OFF");
   }

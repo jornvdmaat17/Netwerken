@@ -3,6 +3,9 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 
+#define BUTTON D2
+#define LED D3
+
 #define SSID "VRV95175E46E1"
 #define PASS "9aYuHkwkGxuw"
 
@@ -13,6 +16,8 @@
 
 #define AIO_LED1 "jvdmaat/feeds/LED1"
 #define AIO_LED2 "jvdmaat/feeds/LED2"
+
+bool LED1_state = false;
 
 WiFiClient client;
 
@@ -25,6 +30,10 @@ void MQTT_connect();
 
 void setup() {
   Serial.begin(9600);
+  pinMode(BUTTON, INPUT_PULLUP);
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, LOW);
+
   WiFi.begin(SSID, PASS);
   while(WiFi.status() != WL_CONNECTED){
     delay(500);
@@ -41,23 +50,25 @@ void setup() {
 void loop() {
   MQTT_connect();
 
-  // TODO: TURN LED ON ACCORDINGLY
   Adafruit_MQTT_Subscribe *subscription;
-  while ((subscription = mqtt.readSubscription(5000))) {
+  while ((subscription = mqtt.readSubscription(10))) {
     if (subscription == &LED2) {
-      Serial.print(F("Got: "));
-      Serial.println((char *)LED2.lastread);
+      Serial.print("\nReceived: "); Serial.print((char*)LED2.lastread);
+      if(strcmp((char*)LED2.lastread, "ON") == 0){     
+        digitalWrite(LED, HIGH);
+      } else {
+        digitalWrite(LED, LOW);
+      }
     }
   }
 
-  // TODO: SEND ON BUTTON PUSH
-  if (!LED.publish("hi")) {
-    Serial.println(F("Failed"));
-  } else {
-    Serial.println(F("OK!"));
+  if(!digitalRead(BUTTON)){
+    Serial.println("Button pressed");
+    LED1_state = !LED1_state;
+    !LED1.publish(LED1_state ? "ON" : "OFF");
   }
 
-  if(! mqtt.ping()) {
+  if(!mqtt.ping()) {
     mqtt.disconnect();
   }
 }
@@ -74,15 +85,15 @@ void MQTT_connect(){
 
   uint8_t retries = 3;
   while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-       Serial.println(mqtt.connectErrorString(ret));
-       Serial.println("Retrying MQTT connection in 5 seconds...");
-       mqtt.disconnect();
-       delay(5000);  // wait 5 seconds
-       retries--;
-       if (retries == 0) {
-         // basically die and wait for WDT to reset me
-         while (1);
-       }
+    Serial.println(mqtt.connectErrorString(ret));
+    Serial.println("Retrying MQTT connection in 5 seconds...");
+    mqtt.disconnect();
+    delay(5000);  // wait 5 seconds
+    retries--;
+    if (retries == 0) {
+      // basically die and wait for WDT to reset me
+      while (1);
+    }
   }
   Serial.println("MQTT Connected!");
 }
